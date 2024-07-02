@@ -23,6 +23,8 @@ const generateAccessAndRefreshTokens = async function (userId) {
     }
 }
 
+
+
 const registerUser = asyncHandler(async (req, res) => {
     // get user details from frontend
     // validation - not empty
@@ -95,6 +97,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
 })
 
+
+
 const loginUser = asyncHandler(async (req, res) => {
     // req body -->data
     // username and email
@@ -149,12 +153,14 @@ const loginUser = asyncHandler(async (req, res) => {
 
 })
 
+
+
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set: {
-                refreshToken: undefined
+            $unset: {
+                refreshToken: 1 //this remove the field from the document
 
             }
         },
@@ -174,6 +180,8 @@ const logoutUser = asyncHandler(async (req, res) => {
             new ApiResponse(200, {}, "User logged out succesfully")
         )
 })
+
+
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
@@ -224,10 +232,12 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 
+
+
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { newPassword, oldPassword } = req.body
     const user = await User.findById(req.user?._id)
-    const isPasswordCorrect = await user.isPasswordValid(oldPassword)
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
     if (!isPasswordCorrect) {
         throw new ApiError(400, "Invalid old password")
     }
@@ -239,6 +249,8 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
         .json(200, {}, "password changed successfully")
 })
 
+
+
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
@@ -248,8 +260,10 @@ const getCurrentUser = asyncHandler(async (req, res) => {
             "User fetched successfully"
         ))
 })
+
+
 const updateAccountDetails = asyncHandler(async (req, res) => {
-    const { fullname, email, } = req.body
+    const { fullname, email } = req.body
     if (!fullname || !email) {
         throw new ApiError(400, "All fields are required")
     }
@@ -266,12 +280,15 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         }
 
     ).select("-password")
+    // console.log(user);
     return res
         .status(200)
         .json(
             new ApiResponse(200, user, "Account details updated Successfully")
         )
 })
+
+
 
 const updateUserAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path
@@ -298,12 +315,14 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .josn(
+        .json(
             new ApiResponse(
                 200, user, "Avatar updated Successfully"
             )
         )
 })
+
+
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path
@@ -330,7 +349,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .josn(
+        .json(
             new ApiResponse(
                 200, user, "Cover Image updated Successfully"
             )
@@ -338,13 +357,15 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
 })
 
+
+
 const getUserChannelProfile = asyncHandler(async (req, res) => {
     const { username } = req.params
     if (!username?.trim()) {
         throw new ApiError(400, "Username is missing")
     }
 
-    const channel = User.aggregate([
+    const channel = await User.aggregate([
         {
             $match: {
                 username: username?.toLowerCase()
@@ -393,7 +414,8 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
                 channelSubscribedToCount: 1,
                 avatar: 1,
                 coverImage: 1,
-                email: 1
+                email: 1,
+                isSubscribed:1,
 
             }
         }
@@ -410,8 +432,10 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
 
 })
 
+
+
 const getWatchHistory = asyncHandler(async (req, res) => {
-    const user = User.aggregate([
+    const user = await User.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(req.user._id)
@@ -459,11 +483,13 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     .status(200)
     .json(
         new ApiResponse(
-            200,user[0].WatchHistory,
+            200,user[0].watchHistory,
             "Watch History Fetched Successfully"
         )
     )
 })
+
+
 
 export {
     registerUser,

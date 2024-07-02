@@ -49,7 +49,7 @@ router
     .post(verifyJWT, getCurrentUser)
 router
     .route("/update-account")
-    .patch(updateAccountDetails)
+    .patch(verifyJWT,updateAccountDetails)
 router
     .route("/updateAvatar")
     .patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
