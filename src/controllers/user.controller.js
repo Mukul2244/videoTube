@@ -298,7 +298,9 @@ const updateUserAvatar=asyncHandler(async(req,res)=>{
     return res
     .status(200)
     .josn(
-        200,user,"Avatar updated Successfully"
+       new ApiResponse(
+         200,user,"Avatar updated Successfully"
+       )
     )
 })
 
@@ -328,7 +330,9 @@ const updateUserCoverImage=asyncHandler(async(req,res)=>{
     return res
     .status(200)
     .josn(
-        200,user,"Cover Image updated Successfully"
+       new ApiResponse(
+         200,user,"Cover Image updated Successfully"
+       )
     )
 
 })
