@@ -11,4 +11,4 @@ const subscriptionSchema= new Schema({
     }
 },{timestamps:true})
 
-const Subscription=model(Subscription,"subscriptionSchema")
+const Subscription=model("Subscription",subscriptionSchema)
